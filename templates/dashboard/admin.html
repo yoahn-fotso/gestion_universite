@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Tableau de bord</h1>
+        <p class="page-subtitle">Bienvenue, {{ user.get_full_name }} — Année académique 2025–2026</p>
+    </div>
+    <a href="{% url 'ajouter_etudiant' %}" class="btn-primary-custom">
+        <i class="fas fa-plus mr-2"></i>Nouvel étudiant
+    </a>
+</div>
+
+<!-- STATS -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card" style="border-top: 3px solid #7eb8f7;">
+            <div style="font-size:28px;margin-bottom:8px">🎓</div>
+            <div class="stat-value" style="color:#7eb8f7">{{ total_etudiants }}</div>
+            <div class="stat-label">Étudiants inscrits</div>
+            <div style="color:#334455;font-size:12px;margin-top:4px">Actifs ce semestre</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card" style="border-top: 3px solid #4ade80;">
+            <div style="font-size:28px;margin-bottom:8px">📚</div>
+            <div class="stat-value" style="color:#4ade80">{{ total_filieres }}</div>
+            <div class="stat-label">Filières actives</div>
+            <div style="color:#334455;font-size:12px;margin-top:4px">Programmes disponibles</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card" style="border-top: 3px solid #c084fc;">
+            <div style="font-size:28px;margin-bottom:8px">👨‍🏫</div>
+            <div class="stat-value" style="color:#c084fc">{{ total_niveaux }}</div>
+            <div class="stat-label">Niveaux d'études</div>
+            <div style="color:#334455;font-size:12px;margin-top:4px">De L1 à M2</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card" style="border-top: 3px solid #fbbf24;">
+            <div style="font-size:28px;margin-bottom:8px">📊</div>
+            <div class="stat-value" style="color:#fbbf24">13.4</div>
+            <div class="stat-label">Moyenne générale</div>
+            <div style="color:#334455;font-size:12px;margin-top:4px">Sur 20 points</div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENU PRINCIPAL -->
+<div class="row">
+    <!-- Derniers étudiants -->
+    <div class="col-md-7 mb-4">
+        <div class="card-dark">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0">Derniers étudiants inscrits</h5>
+                <a href="{% url 'liste_etudiants' %}" class="btn-ghost">Voir tous</a>
+            </div>
+            <table class="table-dark-custom">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Matricule</th>
+                        <th>Filière</th>
+                        <th>Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for etudiant in derniers_etudiants %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center" style="gap:10px">
+                                <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1a4a8a,#2a6db5);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0">
+                                    {{ etudiant.user.first_name|first|upper }}{{ etudiant.user.last_name|first|upper }}
+                                </div>
+                                <div>
+                                    <div style="color:#c8d8f0;font-weight:600">{{ etudiant.user.get_full_name }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:#7eb8f7">{{ etudiant.matricule }}</td>
+                        <td style="color:#8899bb">{{ etudiant.filiere }}</td>
+                        <td>
+                            {% if etudiant.statut == 'actif' %}
+                                <span class="badge-green">Actif</span>
+                            {% else %}
+                                <span class="badge-red">{{ etudiant.get_statut_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'detail_etudiant' etudiant.pk %}" class="btn-ghost">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align:center;color:#334455;padding:24px">
+                            <i class="fas fa-user-graduate" style="font-size:24px;margin-bottom:8px;display:block"></i>
+                            Aucun étudiant enregistré
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Accès rapides -->
+    <div class="col-md-5 mb-4">
+        <div class="card-dark mb-3">
+            <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 16px">Accès rapides</h5>
+            <div class="d-flex flex-column" style="gap:10px">
+                <a href="{% url 'liste_sessions' %}" style="background:rgba(126,184,247,0.06);border:1px solid rgba(126,184,247,0.15);border-radius:12px;padding:14px 16px;color:#7eb8f7;text-decoration:none;display:flex;align-items:center;gap:12px;transition:all 0.2s">
+                    <i class="fas fa-lock" style="font-size:18px"></i>
+                    <div>
+                        <div style="font-weight:600;font-size:14px">Gérer les sessions de notes</div>
+                        <div style="font-size:12px;color:#445566">Anonymat & résultats</div>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto" style="font-size:12px;color:#334455"></i>
+                </a>
+                <a href="{% url 'emploi_du_temps' %}" style="background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.15);border-radius:12px;padding:14px 16px;color:#4ade80;text-decoration:none;display:flex;align-items:center;gap:12px">
+                    <i class="fas fa-calendar-alt" style="font-size:18px"></i>
+                    <div>
+                        <div style="font-weight:600;font-size:14px">Emploi du temps</div>
+                        <div style="font-size:12px;color:#445566">Voir & générer</div>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto" style="font-size:12px;color:#334455"></i>
+                </a>
+                <a href="{% url 'liste_salles' %}" style="background:rgba(192,132,252,0.06);border:1px solid rgba(192,132,252,0.15);border-radius:12px;padding:14px 16px;color:#c084fc;text-decoration:none;display:flex;align-items:center;gap:12px">
+                    <i class="fas fa-chalkboard-teacher" style="font-size:18px"></i>
+                    <div>
+                        <div style="font-weight:600;font-size:14px">Salles virtuelles</div>
+                        <div style="font-size:12px;color:#445566">Documents & ressources</div>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto" style="font-size:12px;color:#334455"></i>
+                </a>
+                <a href="{% url 'admin:index' %}" style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.15);border-radius:12px;padding:14px 16px;color:#fbbf24;text-decoration:none;display:flex;align-items:center;gap:12px">
+                    <i class="fas fa-cogs" style="font-size:18px"></i>
+                    <div>
+                        <div style="font-weight:600;font-size:14px">Administration</div>
+                        <div style="font-size:12px;color:#445566">Paramètres avancés</div>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto" style="font-size:12px;color:#334455"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

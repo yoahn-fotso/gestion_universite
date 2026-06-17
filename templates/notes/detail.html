@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Session — {{ session }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'liste_sessions' %}" style="color:#556688;font-size:14px;text-decoration:none">
+        <i class="fas fa-arrow-left mr-2"></i>Retour aux sessions
+    </a>
+</div>
+
+<!-- EN-TÊTE SESSION -->
+<div class="card-dark mb-4">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h4 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 8px">
+                {{ session.matiere.intitule }}
+            </h4>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                <span class="badge-blue">{{ session.get_type_session_display }}</span>
+                <span class="badge-teal">{{ session.matiere.code }}</span>
+                {% if session.statut == 'preparation' %}
+                    <span class="badge-amber">En préparation</span>
+                {% elif session.statut == 'anonymat_actif' %}
+                    <span class="badge-purple">🔐 Anonymat actif</span>
+                {% elif session.statut == 'notes_saisies' %}
+                    <span class="badge-blue">Notes saisies</span>
+                {% elif session.statut == 'publiee' %}
+                    <span class="badge-green">✅ Publiée</span>
+                {% endif %}
+            </div>
+            <div style="color:#556688;font-size:13px">
+                <i class="fas fa-calendar mr-2"></i>{{ session.date_evaluation|date:"d/m/Y" }}
+                &nbsp;·&nbsp;
+                <i class="fas fa-users mr-2"></i>{{ nb_codes }} étudiant{{ nb_codes|pluralize }}
+                &nbsp;·&nbsp;
+                <i class="fas fa-check mr-2"></i>{{ nb_notes_saisies }} note{{ nb_notes_saisies|pluralize }} saisie{{ nb_notes_saisies|pluralize }}
+            </div>
+        </div>
+
+        <!-- ACTIONS SELON STATUT -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            {% if user.role == 'admin' %}
+                {% if session.statut == 'preparation' %}
+                <a href="{% url 'activer_anonymat' session.pk %}" class="btn-primary-custom"
+                   onclick="return confirm('Activer l\'anonymat ? Des codes seront générés pour tous les étudiants.')">
+                    <i class="fas fa-lock mr-2"></i>Activer l'anonymat
+                </a>
+                {% elif session.statut == 'anonymat_actif' %}
+                <a href="{% url 'lever_anonymat' session.pk %}" style="background:linear-gradient(135deg,#166534,#16a34a);border:none;color:#fff;padding:10px 20px;border-radius:12px;font-weight:600;font-size:14px;text-decoration:none"
+                   onclick="return confirm('Lever l\'anonymat ? Les notes seront associées aux vrais étudiants et publiées.')">
+                    <i class="fas fa-lock-open mr-2"></i>Lever l'anonymat
+                </a>
+                {% endif %}
+            {% endif %}
+
+            {% if session.statut == 'anonymat_actif' %}
+                {% if user.role == 'enseignant' or user.role == 'admin' %}
+                <a href="{% url 'saisir_notes' session.pk %}" class="btn-primary-custom">
+                    <i class="fas fa-pen mr-2"></i>Saisir les notes
+                </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- WORKFLOW ANONYMAT -->
+<div class="card-dark mb-4">
+    <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 20px">
+        <i class="fas fa-shield-alt mr-2" style="color:#c084fc"></i>Processus d'anonymat
+    </h5>
+    <div class="d-flex align-items-center" style="gap:0">
+        {% for etape, label, icone in "preparation,En préparation,clock|anonymat_actif,Anonymat activé,lock|notes_saisies,Notes saisies,pen|publiee,Résultats publiés,check-circle"|split:"|" %}
+        {% endfor %}
+
+        <!-- Étape 1 -->
+        <div style="flex:1;text-align:center">
+            <div style="width:44px;height:44px;border-radius:50%;background:{% if session.statut != 'preparation' %}linear-gradient(135deg,#1a4a8a,#2a6db5){% else %}rgba(255,255,255,0.06){% endif %};display:flex;align-items:center;justify-content:center;margin:0 auto 8px;border:2px solid {% if session.statut == 'preparation' %}#7eb8f7{% else %}transparent{% endif %}">
+                <i class="fas fa-clock" style="color:{% if session.statut != 'preparation' %}#fff{% else %}#7eb8f7{% endif %}"></i>
+            </div>
+            <div style="color:#c8d8f0;font-size:12px;font-weight:600">Préparation</div>
+        </div>
+        <div style="flex:0;width:40px;height:2px;background:rgba(255,255,255,0.1)"></div>
+
+        <!-- Étape 2 -->
+        <div style="flex:1;text-align:center">
+            <div style="width:44px;height:44px;border-radius:50%;background:{% if session.statut == 'anonymat_actif' or session.statut == 'notes_saisies' or session.statut == 'publiee' %}linear-gradient(135deg,#4a1a8a,#7a2db5){% else %}rgba(255,255,255,0.06){% endif %};display:flex;align-items:center;justify-content:center;margin:0 auto 8px;border:2px solid {% if session.statut == 'anonymat_actif' %}#c084fc{% else %}transparent{% endif %}">
+                <i class="fas fa-lock" style="color:{% if session.statut == 'anonymat_actif' or session.statut == 'notes_saisies' or session.statut == 'publiee' %}#fff{% else %}#445566{% endif %}"></i>
+            </div>
+            <div style="color:{% if session.statut == 'anonymat_actif' or session.statut == 'notes_saisies' or session.statut == 'publiee' %}#c8d8f0{% else %}#445566{% endif %};font-size:12px;font-weight:600">Anonymat actif</div>
+        </div>
+        <div style="flex:0;width:40px;height:2px;background:rgba(255,255,255,0.1)"></div>
+
+        <!-- Étape 3 -->
+        <div style="flex:1;text-align:center">
+            <div style="width:44px;height:44px;border-radius:50%;background:{% if session.statut == 'notes_saisies' or session.statut == 'publiee' %}linear-gradient(135deg,#1a4a8a,#2a6db5){% else %}rgba(255,255,255,0.06){% endif %};display:flex;align-items:center;justify-content:center;margin:0 auto 8px">
+                <i class="fas fa-pen" style="color:{% if session.statut == 'notes_saisies' or session.statut == 'publiee' %}#fff{% else %}#445566{% endif %}"></i>
+            </div>
+            <div style="color:{% if session.statut == 'notes_saisies' or session.statut == 'publiee' %}#c8d8f0{% else %}#445566{% endif %};font-size:12px;font-weight:600">Notes saisies</div>
+        </div>
+        <div style="flex:0;width:40px;height:2px;background:rgba(255,255,255,0.1)"></div>
+
+        <!-- Étape 4 -->
+        <div style="flex:1;text-align:center">
+            <div style="width:44px;height:44px;border-radius:50%;background:{% if session.statut == 'publiee' %}linear-gradient(135deg,#166534,#16a34a){% else %}rgba(255,255,255,0.06){% endif %};display:flex;align-items:center;justify-content:center;margin:0 auto 8px">
+                <i class="fas fa-check-circle" style="color:{% if session.statut == 'publiee' %}#fff{% else %}#445566{% endif %}"></i>
+            </div>
+            <div style="color:{% if session.statut == 'publiee' %}#4ade80{% else %}#445566{% endif %};font-size:12px;font-weight:600">Résultats publiés</div>
+        </div>
+    </div>
+</div>
+
+<!-- NOTES FINALES si publiées -->
+{% if notes_finales %}
+<div class="card-dark">
+    <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 20px">
+        <i class="fas fa-list-alt mr-2" style="color:#4ade80"></i>Résultats finaux
+    </h5>
+    <table class="table-dark-custom">
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Matricule</th>
+                <th>Note</th>
+                <th>Mention</th>
+                <th>Observation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for note in notes_finales %}
+            <tr>
+                <td style="color:#c8d8f0;font-weight:600">{{ note.etudiant.user.get_full_name }}</td>
+                <td style="color:#7eb8f7;font-family:monospace">{{ note.etudiant.matricule }}</td>
+                <td>
+                    <span style="color:{% if note.note >= 14 %}#4ade80{% elif note.note >= 10 %}#fbbf24{% else %}#f87171{% endif %};font-weight:800;font-size:16px">
+                        {{ note.note }}/20
+                    </span>
+                </td>
+                <td>
+                    {% if note.note >= 14 %}
+                        <span class="badge-green">{{ note.mention }}</span>
+                    {% elif note.note >= 10 %}
+                        <span class="badge-amber">{{ note.mention }}</span>
+                    {% else %}
+                        <span class="badge-red">{{ note.mention }}</span>
+                    {% endif %}
+                </td>
+                <td style="color:#556688;font-size:13px">{{ note.observation|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

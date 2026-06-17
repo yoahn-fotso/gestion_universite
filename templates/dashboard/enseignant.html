@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Espace Enseignant{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Espace Enseignant</h1>
+        <p class="page-subtitle">Bienvenue, {{ user.get_full_name }} — {{ total_matieres }} matière{{ total_matieres|pluralize }} assignée{{ total_matieres|pluralize }}</p>
+    </div>
+</div>
+
+<!-- STATS -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card" style="border-top:3px solid #7eb8f7">
+            <div style="font-size:28px;margin-bottom:8px">📚</div>
+            <div class="stat-value" style="color:#7eb8f7">{{ total_matieres }}</div>
+            <div class="stat-label">Mes matières</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card" style="border-top:3px solid #4ade80">
+            <div style="font-size:28px;margin-bottom:8px">🏫</div>
+            <div class="stat-value" style="color:#4ade80">{{ salles|length }}</div>
+            <div class="stat-label">Salles virtuelles</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card" style="border-top:3px solid #fbbf24">
+            <div style="font-size:28px;margin-bottom:8px">📝</div>
+            <div class="stat-value" style="color:#fbbf24">—</div>
+            <div class="stat-label">Sessions en cours</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Mes matières -->
+    <div class="col-md-6 mb-4">
+        <div class="card-dark">
+            <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 20px">Mes matières</h5>
+            {% for matiere in matieres %}
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px;margin-bottom:12px">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div style="color:#7eb8f7;font-family:monospace;font-size:12px;font-weight:700;margin-bottom:4px">{{ matiere.code }}</div>
+                        <div style="color:#c8d8f0;font-weight:700;font-size:15px">{{ matiere.intitule }}</div>
+                        <div style="margin-top:8px;display:flex;gap:8px">
+                            <span class="badge-blue">{{ matiere.filiere }}</span>
+                            <span class="badge-purple">{{ matiere.niveau }}</span>
+                            <span class="badge-teal">{{ matiere.credits }} crédits</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'liste_sessions' %}?matiere={{ matiere.pk }}" class="btn-ghost">
+                        <i class="fas fa-clipboard-list mr-1"></i>Notes
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align:center;color:#334455;padding:32px">
+                <i class="fas fa-book" style="font-size:32px;margin-bottom:12px;display:block"></i>
+                Aucune matière assignée
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Mes salles virtuelles -->
+    <div class="col-md-6 mb-4">
+        <div class="card-dark">
+            <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 20px">Mes salles virtuelles</h5>
+            {% for salle in salles %}
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <div style="color:#c8d8f0;font-weight:700">{{ salle.matiere.intitule }}</div>
+                    <div style="color:#556688;font-size:12px;margin-top:4px">
+                        <i class="fas fa-file mr-1"></i>{{ salle.documents.count }} document{{ salle.documents.count|pluralize }}
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <a href="{% url 'detail_salle' salle.pk %}" class="btn-ghost">
+                        <i class="fas fa-eye mr-1"></i>Ouvrir
+                    </a>
+                    <a href="{% url 'upload_document' salle.pk %}" class="btn-primary-custom" style="padding:6px 14px;font-size:13px">
+                        <i class="fas fa-upload mr-1"></i>Déposer
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align:center;color:#334455;padding:32px">
+                <i class="fas fa-chalkboard-teacher" style="font-size:32px;margin-bottom:12px;display:block"></i>
+                Aucune salle virtuelle disponible
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

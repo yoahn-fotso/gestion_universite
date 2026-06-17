@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouvel étudiant{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'liste_etudiants' %}" style="color:#556688;font-size:14px;text-decoration:none">
+        <i class="fas fa-arrow-left mr-2"></i>Retour à la liste
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card-dark">
+            <h4 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 24px">
+                <i class="fas fa-user-plus mr-2" style="color:#7eb8f7"></i>Inscrire un nouvel étudiant
+            </h4>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Prénom *</label>
+                            <input type="text" name="first_name" class="form-control form-control-dark" placeholder="Prénom" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Nom *</label>
+                            <input type="text" name="last_name" class="form-control form-control-dark" placeholder="Nom de famille" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" class="form-control form-control-dark" placeholder="adresse@email.com" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="text" name="telephone" class="form-control form-control-dark" placeholder="+226 XX XX XX XX">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Matricule *</label>
+                            <input type="text" name="matricule" class="form-control form-control-dark" placeholder="UPB-2025-001" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Date de naissance</label>
+                            <input type="date" name="date_naissance" class="form-control form-control-dark">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Filière *</label>
+                            <select name="filiere" class="form-control form-control-dark" required>
+                                <option value="">Choisir...</option>
+                                {% for f in filieres %}
+                                <option value="{{ f.pk }}">{{ f.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Niveau *</label>
+                            <select name="niveau" class="form-control form-control-dark" required>
+                                <option value="">Choisir...</option>
+                                {% for n in niveaux %}
+                                <option value="{{ n.pk }}">{{ n.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Année scolaire *</label>
+                            <select name="annee_scolaire" class="form-control form-control-dark" required>
+                                <option value="">Choisir...</option>
+                                {% for a in annees %}
+                                <option value="{{ a.pk }}" {% if a.en_cours %}selected{% endif %}>{{ a.libelle }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;margin-top:8px;display:flex;gap:12px;justify-content:flex-end">
+                    <a href="{% url 'liste_etudiants' %}" class="btn-ghost" style="padding:10px 20px">Annuler</a>
+                    <button type="submit" class="btn-primary-custom">
+                        <i class="fas fa-save mr-2"></i>Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

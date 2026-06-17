@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Sessions d'évaluation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Sessions d'évaluation</h1>
+        <p class="page-subtitle">Gestion des notes avec système d'anonymat</p>
+    </div>
+    {% if user.role == 'admin' %}
+    <a href="{% url 'admin:notes_session_add' %}" class="btn-primary-custom">
+        <i class="fas fa-plus mr-2"></i>Nouvelle session
+    </a>
+    {% endif %}
+</div>
+
+<div class="card-dark">
+    <table class="table-dark-custom">
+        <thead>
+            <tr>
+                <th>Matière</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th>Progression</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td>
+                    <div style="color:#c8d8f0;font-weight:600">{{ session.matiere.intitule }}</div>
+                    <div style="color:#445566;font-size:12px">{{ session.matiere.code }}</div>
+                </td>
+                <td><span class="badge-blue">{{ session.get_type_session_display }}</span></td>
+                <td style="color:#8899bb;font-size:13px">{{ session.date_evaluation|date:"d/m/Y" }}</td>
+                <td>
+                    {% if session.statut == 'preparation' %}
+                        <span class="badge-amber">En préparation</span>
+                    {% elif session.statut == 'anonymat_actif' %}
+                        <span class="badge-purple">Anonymat actif</span>
+                    {% elif session.statut == 'notes_saisies' %}
+                        <span class="badge-blue">Notes saisies</span>
+                    {% elif session.statut == 'validee' %}
+                        <span class="badge-teal">Validée</span>
+                    {% elif session.statut == 'publiee' %}
+                        <span class="badge-green">Publiée</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% with nb_codes=session.codes_anonymes.count nb_notes=session.notes_anonymes.count %}
+                    {% if nb_codes > 0 %}
+                    <div style="background:rgba(255,255,255,0.06);border-radius:8px;height:8px;overflow:hidden">
+                        <div style="background:#7eb8f7;height:100%;width:{% widthratio nb_notes nb_codes 100 %}%;border-radius:8px"></div>
+                    </div>
+                    <div style="color:#556688;font-size:11px;margin-top:4px">{{ nb_notes }}/{{ nb_codes }} notes</div>
+                    {% else %}
+                    <span style="color:#334455;font-size:12px">—</span>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    <a href="{% url 'detail_session' session.pk %}" class="btn-ghost">
+                        <i class="fas fa-eye mr-1"></i>Gérer
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align:center;color:#334455;padding:48px">
+                    <i class="fas fa-clipboard-list" style="font-size:36px;margin-bottom:12px;display:block"></i>
+                    Aucune session d'évaluation
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

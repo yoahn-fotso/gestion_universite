@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Étudiants{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Étudiants</h1>
+        <p class="page-subtitle">{{ etudiants|length }} étudiant{{ etudiants|length|pluralize }} trouvé{{ etudiants|length|pluralize }}</p>
+    </div>
+    <a href="{% url 'ajouter_etudiant' %}" class="btn-primary-custom">
+        <i class="fas fa-plus mr-2"></i>Nouvel étudiant
+    </a>
+</div>
+
+<!-- FILTRES -->
+<div class="card-dark mb-4">
+    <form method="get" class="d-flex align-items-end" style="gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+            <label>Rechercher</label>
+            <div style="position:relative">
+                <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#445566"></i>
+                <input type="text" name="search" value="{{ search }}" placeholder="Nom, prénom, matricule..." class="form-control-dark form-control" style="padding-left:44px !important">
+            </div>
+        </div>
+        <div style="min-width:160px">
+            <label>Filière</label>
+            <select name="filiere" class="form-control-dark form-control">
+                <option value="">Toutes les filières</option>
+                {% for f in filieres %}
+                <option value="{{ f.pk }}" {% if request.GET.filiere == f.pk|stringformat:"i" %}selected{% endif %}>{{ f.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="min-width:140px">
+            <label>Niveau</label>
+            <select name="niveau" class="form-control-dark form-control">
+                <option value="">Tous les niveaux</option>
+                {% for n in niveaux %}
+                <option value="{{ n.pk }}" {% if request.GET.niveau == n.pk|stringformat:"i" %}selected{% endif %}>{{ n.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-primary-custom">
+            <i class="fas fa-filter mr-2"></i>Filtrer
+        </button>
+        <a href="{% url 'liste_etudiants' %}" class="btn-ghost">Réinitialiser</a>
+    </form>
+</div>
+
+<!-- TABLE -->
+<div class="card-dark">
+    <div style="overflow-x:auto">
+        <table class="table-dark-custom">
+            <thead>
+                <tr>
+                    <th>Étudiant</th>
+                    <th>Matricule</th>
+                    <th>Filière</th>
+                    <th>Niveau</th>
+                    <th>Inscription</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for etudiant in etudiants %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center" style="gap:12px">
+                            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#1a4a8a,#2a6db5);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0">
+                                {{ etudiant.user.first_name|first|upper }}{{ etudiant.user.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <div style="color:#c8d8f0;font-weight:600">{{ etudiant.user.get_full_name }}</div>
+                                <div style="color:#445566;font-size:12px">{{ etudiant.user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color:#7eb8f7;font-family:monospace">{{ etudiant.matricule }}</td>
+                    <td style="color:#8899bb">{{ etudiant.filiere }}</td>
+                    <td><span class="badge-purple">{{ etudiant.niveau }}</span></td>
+                    <td style="color:#556688;font-size:13px">{{ etudiant.date_inscription|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if etudiant.statut == 'actif' %}
+                            <span class="badge-green">Actif</span>
+                        {% elif etudiant.statut == 'suspendu' %}
+                            <span class="badge-red">Suspendu</span>
+                        {% elif etudiant.statut == 'diplome' %}
+                            <span class="badge-blue">Diplômé</span>
+                        {% else %}
+                            <span class="badge-amber">{{ etudiant.get_statut_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'detail_etudiant' etudiant.pk %}" class="btn-ghost">
+                            <i class="fas fa-eye mr-1"></i>Fiche
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align:center;color:#334455;padding:48px">
+                        <i class="fas fa-user-graduate" style="font-size:36px;margin-bottom:12px;display:block"></i>
+                        Aucun étudiant trouvé
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
