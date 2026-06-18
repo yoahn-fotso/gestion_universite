@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Emploi du temps{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Emploi du temps</h1>
+        <p class="page-subtitle">Planning hebdomadaire · Semestre en cours</p>
+    </div>
+    {% if user.role == 'admin' %}
+    <a href="{% url 'generer_emploi_du_temps' %}" class="btn-primary-custom">
+        <i class="fas fa-magic mr-2"></i>Générer automatiquement
+    </a>
+    {% endif %}
+</div>
+
+<!-- FILTRES -->
+<div class="card-dark mb-4">
+    <form method="get" class="d-flex align-items-end" style="gap:16px;flex-wrap:wrap">
+        <div style="min-width:180px">
+            <label>Filière</label>
+            <select name="filiere" class="form-control form-control-dark">
+                <option value="">Toutes les filières</option>
+                {% for f in filieres %}
+                <option value="{{ f.pk }}" {% if filiere_id == f.pk|stringformat:"i" %}selected{% endif %}>{{ f.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="min-width:160px">
+            <label>Niveau</label>
+            <select name="niveau" class="form-control form-control-dark">
+                <option value="">Tous les niveaux</option>
+                {% for n in niveaux %}
+                <option value="{{ n.pk }}" {% if niveau_id == n.pk|stringformat:"i" %}selected{% endif %}>{{ n.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-primary-custom">
+            <i class="fas fa-filter mr-2"></i>Filtrer
+        </button>
+        <a href="{% url 'emploi_du_temps' %}" class="btn-ghost" style="padding:10px 20px">Réinitialiser</a>
+    </form>
+</div>
+
+<!-- LÉGENDE -->
+<div class="d-flex align-items-center mb-3" style="gap:16px;flex-wrap:wrap">
+    <span style="color:#8899bb;font-size:13px;font-weight:600">Légende :</span>
+    <div class="d-flex align-items-center" style="gap:6px">
+        <div style="width:12px;height:12px;border-radius:3px;background:#7eb8f7"></div>
+        <span style="color:#8899bb;font-size:12px">Cours Magistral (CM)</span>
+    </div>
+    <div class="d-flex align-items-center" style="gap:6px">
+        <div style="width:12px;height:12px;border-radius:3px;background:#4ade80"></div>
+        <span style="color:#8899bb;font-size:12px">Travaux Dirigés (TD)</span>
+    </div>
+    <div class="d-flex align-items-center" style="gap:6px">
+        <div style="width:12px;height:12px;border-radius:3px;background:#fbbf24"></div>
+        <span style="color:#8899bb;font-size:12px">Travaux Pratiques (TP)</span>
+    </div>
+</div>
+
+<!-- PLANNING -->
+{% if planning %}
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;overflow-x:auto">
+    {% for jour in jours %}
+    <div>
+        <!-- En-tête jour -->
+        <div style="background:linear-gradient(135deg,#1a4a8a,#2a6db5);border-radius:12px 12px 0 0;padding:12px;text-align:center;margin-bottom:0">
+            <div style="color:#fff;font-weight:700;font-size:14px">{{ jour }}</div>
+        </div>
+        <!-- Séances -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-top:none;border-radius:0 0 12px 12px;padding:10px;min-height:220px;display:flex;flex-direction:column;gap:8px">
+            {% with seances_jour=planning|default:None %}
+            {% for seance in planning.jour %}
+            {% endfor %}
+            {% endwith %}
+
+            {% for seance in planning|dictsort:"jour" %}
+            {% endfor %}
+
+            {% comment %}Itération directe sur le planning{% endcomment %}
+            {% if jour == "Lundi" %}{% with seances=planning.Lundi %}{% include "cours/_seance_card.html" %}{% endwith %}
+            {% elif jour == "Mardi" %}{% with seances=planning.Mardi %}{% include "cours/_seance_card.html" %}{% endwith %}
+            {% elif jour == "Mercredi" %}{% with seances=planning.Mercredi %}{% include "cours/_seance_card.html" %}{% endwith %}
+            {% elif jour == "Jeudi" %}{% with seances=planning.Jeudi %}{% include "cours/_seance_card.html" %}{% endwith %}
+            {% elif jour == "Vendredi" %}{% with seances=planning.Vendredi %}{% include "cours/_seance_card.html" %}{% endwith %}
+            {% elif jour == "Samedi" %}{% with seances=planning.Samedi %}{% include "cours/_seance_card.html" %}{% endwith %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="card-dark" style="text-align:center;padding:64px">
+    <i class="fas fa-calendar-times" style="font-size:48px;color:#334455;margin-bottom:16px;display:block"></i>
+    <div style="color:#445566;font-size:16px;margin-bottom:8px">Aucun cours planifié</div>
+    {% if user.role == 'admin' %}
+    <a href="{% url 'generer_emploi_du_temps' %}" class="btn-primary-custom" style="display:inline-block;margin-top:16px">
+        <i class="fas fa-magic mr-2"></i>Générer l'emploi du temps
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Rendu des séances par jour directement via JS pour éviter les limitations template Django
+document.addEventListener('DOMContentLoaded', function() {
+    const planning = {{ planning_json|default:"{}"|safe }};
+});
+</script>
+{% endblock %}

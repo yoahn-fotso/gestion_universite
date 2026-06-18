@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Cours{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Cours</h1>
+        <p class="page-subtitle">{{ matieres|length }} matière{{ matieres|length|pluralize }} au programme</p>
+    </div>
+    {% if user.role == 'admin' %}
+    <a href="{% url 'admin:cours_matiere_add' %}" class="btn-primary-custom">
+        <i class="fas fa-plus mr-2"></i>Nouvelle matière
+    </a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for matiere in matieres %}
+    <div class="col-md-4 mb-4">
+        <div class="card-dark" style="height:100%;transition:border-color 0.2s,transform 0.2s;cursor:default"
+            onmouseover="this.style.borderColor='rgba(126,184,247,0.3)';this.style.transform='translateY(-3px)'"
+            onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='translateY(0)'">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <span style="color:#7eb8f7;font-family:monospace;font-size:13px;font-weight:700;background:rgba(126,184,247,0.1);padding:4px 12px;border-radius:8px">{{ matiere.code }}</span>
+                <span class="badge-teal">{{ matiere.credits }} crédits</span>
+            </div>
+            <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 8px;font-size:16px;line-height:1.4">{{ matiere.intitule }}</h5>
+            <div style="color:#556688;font-size:13px;margin-bottom:14px">
+                <i class="fas fa-user-tie mr-1"></i>{{ matiere.enseignant.get_full_name|default:"Non assigné" }}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                <span class="badge-blue">{{ matiere.filiere }}</span>
+                <span class="badge-purple">{{ matiere.niveau }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px">
+                <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;text-align:center">
+                    <div style="color:#7eb8f7;font-weight:700">{{ matiere.heures_cm }}h</div>
+                    <div style="color:#445566;font-size:11px">CM</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;text-align:center">
+                    <div style="color:#4ade80;font-weight:700">{{ matiere.heures_td }}h</div>
+                    <div style="color:#445566;font-size:11px">TD</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;text-align:center">
+                    <div style="color:#fbbf24;font-weight:700">{{ matiere.heures_tp }}h</div>
+                    <div style="color:#445566;font-size:11px">TP</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card-dark" style="text-align:center;padding:64px">
+            <i class="fas fa-book" style="font-size:48px;color:#334455;margin-bottom:16px;display:block"></i>
+            <div style="color:#445566;font-size:16px">Aucune matière enregistrée</div>
+            {% if user.role == 'admin' %}
+            <a href="{% url 'admin:cours_matiere_add' %}" class="btn-primary-custom" style="display:inline-block;margin-top:16px">
+                <i class="fas fa-plus mr-2"></i>Ajouter une matière
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

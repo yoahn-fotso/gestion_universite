@@ -1,0 +1,16 @@
+{% for seance in seances %}
+<div style="background:{% if seance.type_seance == 'CM' %}rgba(126,184,247,0.1){% elif seance.type_seance == 'TD' %}rgba(74,222,128,0.1){% else %}rgba(251,191,36,0.1){% endif %};border:1px solid {% if seance.type_seance == 'CM' %}rgba(126,184,247,0.3){% elif seance.type_seance == 'TD' %}rgba(74,222,128,0.3){% else %}rgba(251,191,36,0.3){% endif %};border-radius:10px;padding:10px 12px">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <span style="background:{% if seance.type_seance == 'CM' %}rgba(126,184,247,0.2){% elif seance.type_seance == 'TD' %}rgba(74,222,128,0.2){% else %}rgba(251,191,36,0.2){% endif %};color:{% if seance.type_seance == 'CM' %}#7eb8f7{% elif seance.type_seance == 'TD' %}#4ade80{% else %}#fbbf24{% endif %};font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px">{{ seance.type_seance }}</span>
+        <span style="color:#445566;font-size:10px">{{ seance.heure_debut|time:"H:i" }}</span>
+    </div>
+    <div style="color:#c8d8f0;font-size:12px;font-weight:600;line-height:1.4;margin-bottom:6px">{{ seance.matiere.intitule }}</div>
+    <div style="color:#445566;font-size:11px"><i class="fas fa-map-marker-alt mr-1"></i>{{ seance.salle }}</div>
+    <div style="color:#445566;font-size:11px;margin-top:2px"><i class="fas fa-clock mr-1"></i>{{ seance.heure_debut|time:"H:i" }} — {{ seance.heure_fin|time:"H:i" }}</div>
+</div>
+{% empty %}
+<div style="color:#2a3a4a;font-size:12px;text-align:center;padding:20px 0">
+    <i class="fas fa-coffee" style="display:block;font-size:20px;margin-bottom:6px"></i>
+    Pas de cours
+</div>
+{% endfor %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Sessions d'Évaluation{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Sessions d'Évaluation</h1>
+        <p class="page-subtitle">Gérez les examens, l'anonymat et les résultats</p>
+    </div>
+    {% if user.role == 'admin' %}
+    <div>
+        <a href="#" class="btn-primary-custom" style="box-shadow:0 4px 15px rgba(126,184,247,0.2)">
+            <i class="fas fa-plus mr-2"></i>Nouvelle Session
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card-dark mb-4">
+    <form method="get" class="d-flex align-items-end" style="gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+            <label>Rechercher une matière</label>
+            <div style="position:relative">
+                <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#445566"></i>
+                <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Code, Intitulé..." class="form-control-dark form-control" style="padding-left:44px !important">
+            </div>
+        </div>
+        <div style="min-width:160px">
+            <label>Statut</label>
+            <select name="statut" class="form-control-dark form-control">
+                <option value="">Tous les statuts</option>
+                <option value="preparation" {% if request.GET.statut == 'preparation' %}selected{% endif %}>En préparation</option>
+                <option value="anonymat_actif" {% if request.GET.statut == 'anonymat_actif' %}selected{% endif %}>Anonymat actif</option>
+                <option value="notes_saisies" {% if request.GET.statut == 'notes_saisies' %}selected{% endif %}>Notes saisies</option>
+                <option value="publiee" {% if request.GET.statut == 'publiee' %}selected{% endif %}>Publiée</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-primary-custom">
+            <i class="fas fa-filter mr-2"></i>Filtrer
+        </button>
+    </form>
+</div>
+
+<div class="card-dark">
+    <div class="table-responsive">
+        <table class="table-dark-custom" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Matière & Détails</th>
+                    <th>Date prévue</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                    <th style="text-align:right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                <tr style="transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                    <td>
+                        <div style="color:#c8d8f0;font-weight:600;font-size:15px">{{ session.matiere.intitule }}</div>
+                        <div style="color:#7eb8f7;font-family:monospace;font-size:12px;margin-top:2px">
+                            {{ session.matiere.code }} · {{ session.matiere.filiere }} ({{ session.matiere.niveau }})
+                        </div>
+                    </td>
+                    <td style="color:#8899bb;font-size:14px">
+                        <i class="fas fa-calendar-alt mr-2" style="color:#445566"></i>{{ session.date_evaluation|date:"d M Y" }}
+                    </td>
+                    <td>
+                        <span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#c8d8f0;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600">
+                            {{ session.get_type_session_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if session.statut == 'preparation' %}
+                            <span class="badge-amber"><i class="fas fa-clock mr-1"></i>Préparation</span>
+                        {% elif session.statut == 'anonymat_actif' %}
+                            <span class="badge-purple" style="box-shadow:0 0 10px rgba(192,132,252,0.2)"><i class="fas fa-user-secret mr-1"></i>Anonymat</span>
+                        {% elif session.statut == 'notes_saisies' %}
+                            <span class="badge-blue"><i class="fas fa-pen mr-1"></i>À publier</span>
+                        {% elif session.statut == 'publiee' %}
+                            <span class="badge-green"><i class="fas fa-check-circle mr-1"></i>Publiée</span>
+                        {% else %}
+                            <span class="badge-blue">{{ session.statut }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right">
+                        <a href="{% url 'detail_session' session.pk %}" class="btn-ghost">
+                            <i class="fas fa-cogs mr-2"></i>Gérer
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:64px 20px">
+                        <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+                            <i class="fas fa-folder-open" style="font-size:24px;color:#445566"></i>
+                        </div>
+                        <div style="color:#c8d8f0;font-weight:600;font-size:16px;margin-bottom:8px">Aucune session trouvée</div>
+                        <div style="color:#556688;font-size:14px">Créez une nouvelle session pour commencer les évaluations.</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

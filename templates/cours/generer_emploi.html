@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Générer l'emploi du temps{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'emploi_du_temps' %}" style="color:#556688;font-size:14px;text-decoration:none">
+        <i class="fas fa-arrow-left mr-2"></i>Retour à l'emploi du temps
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+
+        <!-- INFO ALGO -->
+        <div style="background:rgba(126,184,247,0.06);border:1px solid rgba(126,184,247,0.2);border-radius:14px;padding:18px 20px;margin-bottom:24px">
+            <div class="d-flex align-items-start" style="gap:14px">
+                <i class="fas fa-magic" style="color:#7eb8f7;font-size:22px;margin-top:2px"></i>
+                <div>
+                    <div style="color:#7eb8f7;font-weight:700;margin-bottom:6px">Génération automatique intelligente</div>
+                    <div style="color:#8899bb;font-size:13px;line-height:1.7">
+                        L'algorithme génère automatiquement l'emploi du temps en évitant :
+                    </div>
+                    <ul style="color:#8899bb;font-size:13px;margin:8px 0 0;padding-left:20px;line-height:1.8">
+                        <li>Les conflits de salle (même salle, même créneau)</li>
+                        <li>Les conflits d'enseignant (même enseignant, deux classes en même temps)</li>
+                        <li>Les conflits de filière (même filière/niveau, deux cours en même temps)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-dark">
+            <h4 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 24px">
+                <i class="fas fa-calendar-plus mr-2" style="color:#7eb8f7"></i>Paramètres de génération
+            </h4>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Filière *</label>
+                    <select name="filiere" class="form-control form-control-dark" required>
+                        <option value="">Sélectionner une filière...</option>
+                        {% for f in filieres %}
+                        <option value="{{ f.pk }}">{{ f.nom }} ({{ f.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Niveau *</label>
+                    <select name="niveau" class="form-control form-control-dark" required>
+                        <option value="">Sélectionner un niveau...</option>
+                        {% for n in niveaux %}
+                        <option value="{{ n.pk }}">{{ n.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Année scolaire *</label>
+                    <select name="annee_scolaire" class="form-control form-control-dark" required>
+                        <option value="">Sélectionner une année...</option>
+                        {% for a in annees %}
+                        <option value="{{ a.pk }}" {% if a.en_cours %}selected{% endif %}>
+                            {{ a.libelle }} {% if a.en_cours %}(En cours){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Créneaux horaires -->
+                <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;margin-bottom:20px">
+                    <div style="color:#8899bb;font-size:13px;font-weight:600;margin-bottom:12px">
+                        <i class="fas fa-clock mr-2"></i>Créneaux horaires utilisés
+                    </div>
+                    {% for creneau in "08:00–10:00,10:30–12:30,14:00–16:00,16:30–18:30"|split:"," %}
+                    <div style="display:inline-block;background:rgba(126,184,247,0.1);border:1px solid rgba(126,184,247,0.2);border-radius:8px;padding:4px 12px;margin:4px;color:#7eb8f7;font-size:13px">
+                        {{ creneau }}
+                    </div>
+                    {% endfor %}
+                    <div style="display:inline-block;background:rgba(126,184,247,0.1);border:1px solid rgba(126,184,247,0.2);border-radius:8px;padding:4px 12px;margin:4px;color:#7eb8f7;font-size:13px">08:00–10:00</div>
+                    <div style="display:inline-block;background:rgba(126,184,247,0.1);border:1px solid rgba(126,184,247,0.2);border-radius:8px;padding:4px 12px;margin:4px;color:#7eb8f7;font-size:13px">10:30–12:30</div>
+                    <div style="display:inline-block;background:rgba(126,184,247,0.1);border:1px solid rgba(126,184,247,0.2);border-radius:8px;padding:4px 12px;margin:4px;color:#7eb8f7;font-size:13px">14:00–16:00</div>
+                    <div style="display:inline-block;background:rgba(126,184,247,0.1);border:1px solid rgba(126,184,247,0.2);border-radius:8px;padding:4px 12px;margin:4px;color:#7eb8f7;font-size:13px">16:30–18:30</div>
+                </div>
+
+                <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;display:flex;gap:12px;justify-content:flex-end">
+                    <a href="{% url 'emploi_du_temps' %}" class="btn-ghost" style="padding:10px 20px">Annuler</a>
+                    <button type="submit" class="btn-primary-custom">
+                        <i class="fas fa-magic mr-2"></i>Lancer la génération
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- AVERTISSEMENT -->
+        <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px 18px;margin-top:16px;display:flex;gap:12px;align-items:flex-start">
+            <i class="fas fa-exclamation-triangle" style="color:#fbbf24;margin-top:2px"></i>
+            <div style="color:#8899bb;font-size:13px;line-height:1.6">
+                <strong style="color:#fbbf24">Note :</strong> La génération automatique place les cours magistraux (CM) en priorité.
+                Les salles doivent être créées et marquées comme disponibles dans l'administration avant de lancer la génération.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

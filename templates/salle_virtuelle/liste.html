@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Salles Virtuelles{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Salles de Classe Virtuelles</h1>
+        <p class="page-subtitle">{{ salles|length }} salle{{ salles|length|pluralize }} disponible{{ salles|length|pluralize }}</p>
+    </div>
+</div>
+
+<div class="row">
+    {% for salle in salles %}
+    <div class="col-md-4 mb-4">
+        <div class="card-dark" style="transition:border-color 0.2s,transform 0.2s;height:100%"
+            onmouseover="this.style.borderColor='rgba(126,184,247,0.3)';this.style.transform='translateY(-3px)'"
+            onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='translateY(0)'">
+            <div style="font-size:36px;margin-bottom:14px">🏫</div>
+            <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 6px;font-size:16px">{{ salle.matiere.intitule }}</h5>
+            <div style="color:#7eb8f7;font-family:monospace;font-size:12px;margin-bottom:12px">{{ salle.matiere.code }}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+                <span class="badge-blue">{{ salle.matiere.filiere }}</span>
+                <span class="badge-purple">{{ salle.matiere.niveau }}</span>
+            </div>
+            <div style="color:#556688;font-size:13px;margin-bottom:6px">
+                <i class="fas fa-user-tie mr-2"></i>{{ salle.matiere.enseignant.get_full_name|default:"Non assigné" }}
+            </div>
+
+            <!-- Stats documents -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;padding:12px 0;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">
+                <div style="text-align:center">
+                    <div style="color:#7eb8f7;font-weight:800;font-size:20px">{{ salle.documents.count }}</div>
+                    <div style="color:#445566;font-size:11px">Documents</div>
+                </div>
+                <div style="text-align:center">
+                    <div style="color:#c084fc;font-weight:800;font-size:20px">{{ salle.annonces.count }}</div>
+                    <div style="color:#445566;font-size:11px">Annonces</div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px">
+                <a href="{% url 'detail_salle' salle.pk %}" class="btn-primary-custom" style="flex:1;text-align:center;padding:10px">
+                    <i class="fas fa-door-open mr-2"></i>Accéder
+                </a>
+                {% if user.role == 'enseignant' or user.role == 'admin' %}
+                <a href="{% url 'upload_document' salle.pk %}" class="btn-ghost" style="padding:10px 14px" title="Déposer un document">
+                    <i class="fas fa-upload"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card-dark" style="text-align:center;padding:64px">
+            <i class="fas fa-chalkboard-teacher" style="font-size:48px;color:#334455;margin-bottom:16px;display:block"></i>
+            <div style="color:#445566;font-size:16px">Aucune salle virtuelle disponible</div>
+            <div style="color:#334455;font-size:13px;margin-top:8px">Les salles sont créées automatiquement lors de l'ajout des matières</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

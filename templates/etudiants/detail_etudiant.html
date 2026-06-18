@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Fiche Étudiant — {{ etudiant.user.last_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'resultats' %}" style="color:#556688;font-size:14px;text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#7eb8f7'" onmouseout="this.style.color='#556688'">
+        <i class="fas fa-arrow-left mr-2"></i>Retour à la liste
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card-dark" style="text-align:center;padding:32px 20px">
+            <div style="width:100px;height:100px;border-radius:24px;background:linear-gradient(135deg,#1a4a8a,#2a6db5);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:36px;color:#fff;margin:0 auto 20px;box-shadow:0 8px 24px rgba(26,74,138,0.3)">
+                {{ etudiant.user.first_name|first|upper }}{{ etudiant.user.last_name|first|upper }}
+            </div>
+            
+            <h3 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0 0 8px">
+                {{ etudiant.user.get_full_name }}
+            </h3>
+            
+            <div style="background:rgba(126,184,247,0.1);color:#7eb8f7;padding:6px 16px;border-radius:20px;font-family:monospace;font-size:14px;font-weight:700;display:inline-block;margin-bottom:24px">
+                {{ etudiant.matricule }}
+            </div>
+
+            <div style="text-align:left;border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;display:flex;flex-direction:column;gap:16px">
+                <div>
+                    <div style="color:#556688;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Filière & Niveau</div>
+                    <div style="color:#c8d8f0;font-weight:600">
+                        <span class="badge-blue mr-2">{{ etudiant.filiere }}</span>
+                        <span class="badge-purple">{{ etudiant.niveau }}</span>
+                    </div>
+                </div>
+                <div>
+                    <div style="color:#556688;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Contact Email</div>
+                    <div style="color:#c8d8f0;font-weight:600"><i class="fas fa-envelope mr-2" style="color:#7eb8f7"></i>{{ etudiant.user.email|default:"Non renseigné" }}</div>
+                </div>
+                <div>
+                    <div style="color:#556688;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Téléphone</div>
+                    <div style="color:#c8d8f0;font-weight:600"><i class="fas fa-phone mr-2" style="color:#7eb8f7"></i>{{ etudiant.telephone|default:"Non renseigné" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 mb-4">
+        <div class="card-dark" style="height:100%">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 style="color:#f0f4ff;font-family:'Playfair Display',serif;margin:0">
+                    <i class="fas fa-graduation-cap mr-2" style="color:#4ade80"></i>Dossier Académique
+                </h5>
+                <span class="badge-blue" style="font-size:14px">{{ notes|length }} note{{ notes|pluralize }} enregistrée{{ notes|pluralize }}</span>
+            </div>
+
+            {% if notes %}
+            <div class="table-responsive">
+                <table class="table-dark-custom" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Matière</th>
+                            <th>Session</th>
+                            <th>Note /20</th>
+                            <th>Mention</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for note in notes %}
+                        <tr>
+                            <td>
+                                <div style="color:#c8d8f0;font-weight:600">{{ note.matiere.intitule }}</div>
+                                <div style="color:#556688;font-size:12px;font-family:monospace">{{ note.matiere.code }}</div>
+                            </td>
+                            <td><span class="badge-blue" style="font-size:11px">{{ note.session.get_type_session_display }}</span></td>
+                            <td>
+                                <span style="color:{% if note.note >= 14 %}#4ade80{% elif note.note >= 10 %}#fbbf24{% else %}#f87171{% endif %};font-weight:800;font-size:18px">
+                                    {{ note.note }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if note.note >= 16 %}
+                                    <span class="badge-green">Très Bien</span>
+                                {% elif note.note >= 14 %}
+                                    <span class="badge-green">Bien</span>
+                                {% elif note.note >= 12 %}
+                                    <span class="badge-teal">Assez Bien</span>
+                                {% elif note.note >= 10 %}
+                                    <span class="badge-amber">Passable</span>
+                                {% else %}
+                                    <span class="badge-red">Ajourné</span>
+                                {% endif %}
+                                {% if note.observation %}
+                                    <div style="color:#556688;font-size:11px;margin-top:4px;font-style:italic">"{{ note.observation }}"</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:48px 0">
+                <i class="fas fa-folder-open" style="font-size:48px;color:#334455;margin-bottom:16px;display:block"></i>
+                <div style="color:#c8d8f0;font-weight:600;margin-bottom:4px">Aucun résultat</div>
+                <div style="color:#556688;font-size:13px">Cet étudiant n'a pas encore de notes validées.</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
