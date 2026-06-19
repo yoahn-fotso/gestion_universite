@@ -4,6 +4,9 @@ from django.contrib import messages
 from .models import Etudiant, Filiere, Niveau, AnneeScolaire
 from notes.models import Note
 from cours.models import Seance
+from accounts.models import User
+from django.db import IntegrityError, transaction
+from django.utils.crypto import get_random_string
 
 
 @login_required
@@ -97,7 +100,58 @@ def detail_etudiant(request, pk):
 @login_required
 def ajouter_etudiant(request):
     if request.method == 'POST':
-        messages.success(request, 'Étudiant ajouté avec succès !')
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        telephone = request.POST.get('telephone', '').strip()
+        matricule = request.POST.get('matricule', '').strip()
+        date_naissance = request.POST.get('date_naissance') or None
+        filiere_id = request.POST.get('filiere')
+        niveau_id = request.POST.get('niveau')
+        annee_id = request.POST.get('annee_scolaire')
+
+        if not (first_name and last_name and email and matricule and filiere_id and niveau_id and annee_id):
+            messages.error(request, 'Veuillez remplir tous les champs obligatoires.')
+            return redirect('ajouter_etudiant')
+
+        # Générer un nom d'utilisateur à partir du matricule (unique) et un mot de passe temporaire
+        username = matricule
+        temp_password = get_random_string(10)
+
+        try:
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=temp_password,
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+                user.role = 'etudiant'
+                user.telephone = telephone
+                user.save()
+
+                filiere = Filiere.objects.get(pk=filiere_id)
+                niveau = Niveau.objects.get(pk=niveau_id)
+                annee = AnneeScolaire.objects.get(pk=annee_id)
+
+                Etudiant.objects.create(
+                    user=user,
+                    matricule=matricule,
+                    filiere=filiere,
+                    niveau=niveau,
+                    annee_scolaire=annee,
+                    date_naissance=date_naissance or None,
+                )
+
+        except IntegrityError as e:
+            messages.error(request, f"Erreur lors de la création de l'étudiant : {str(e)}")
+            return redirect('ajouter_etudiant')
+        except Filiere.DoesNotExist or Niveau.DoesNotExist or AnneeScolaire.DoesNotExist:
+            messages.error(request, "Sélection invalide pour la filière / niveau / année scolaire.")
+            return redirect('ajouter_etudiant')
+
+        messages.success(request, f"Étudiant créé avec succès. Identifiant : {username} Mot de passe temporaire : {temp_password}")
         return redirect('liste_etudiants')
     filieres = Filiere.objects.all()
     niveaux = Niveau.objects.all()
